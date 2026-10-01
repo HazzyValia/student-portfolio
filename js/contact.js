@@ -1,5 +1,10 @@
-// Get the form
+// Paste your Formspree address between the quotation marks
+const FORM_URL = "https://formspree.io/f/xnpnrkvr";
+
+// Get the form and button
 const form = document.getElementById("contactForm");
+const sendBtn = document.getElementById("sendBtn");
+const successMessage = document.getElementById("successMessage");
 
 // Show an error message under a field
 function showError(fieldId, message) {
@@ -12,7 +17,7 @@ function clearErrors() {
   for (let i = 0; i < fields.length; i++) {
     showError(fields[i], "");
   }
-  document.getElementById("successMessage").textContent = "";
+  successMessage.textContent = "";
 }
 
 // Check email format: text @ text . text
@@ -25,6 +30,39 @@ function isValidEmail(email) {
 function isDigitsOnly(phone) {
   const pattern = /^[0-9]+$/;
   return pattern.test(phone);
+}
+
+// Send the form data to Formspree
+function sendMessage(name) {
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Sending...";
+
+  fetch(FORM_URL, {
+    method: "POST",
+    body: new FormData(form),
+    headers: { "Accept": "application/json" }
+  })
+    .then(function (response) {
+      if (response.ok) {
+        successMessage.style.color = "#2a9d8f";
+        successMessage.textContent =
+          "Thank you, " + name + "! Your message has been sent successfully.";
+        form.reset();
+      } else {
+        successMessage.style.color = "#c1121f";
+        successMessage.textContent =
+          "Sorry, something went wrong. Please try again.";
+      }
+    })
+    .catch(function () {
+      successMessage.style.color = "#c1121f";
+      successMessage.textContent =
+        "Network error. Please check your internet and try again.";
+    })
+    .finally(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send Message";
+    });
 }
 
 // Runs when the user clicks "Send Message"
@@ -68,10 +106,8 @@ form.addEventListener("submit", function (event) {
     isValid = false;
   }
 
-  // If everything is correct
+  // Only send if everything is correct
   if (isValid) {
-    document.getElementById("successMessage").textContent =
-      "Thank you, " + name + "! Your message has been sent successfully.";
-    form.reset();
+    sendMessage(name);
   }
 });
